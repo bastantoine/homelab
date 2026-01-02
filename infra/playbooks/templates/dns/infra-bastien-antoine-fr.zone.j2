@@ -1,0 +1,25 @@
+$TTL 2d
+
+$ORIGIN infra.bastien-antoine.fr.
+
+@             IN          SOA     ns.infra.bastien-antoine.fr. info.bastien-antoine.fr. (
+                                    2024100300    ; serial
+                                    12h           ; refresh time
+                                    15m           ; retry time
+                                    3w            ; expire time
+                                    2h            ; minimum TTL
+                                )
+
+; Declare which server hosts the DNS records
+              IN          NS      ns.infra.bastien-antoine.fr.
+ns            IN          A       192.168.1.201
+
+; Proxmox hosts DNS records
+proxmox-1     IN          A       192.168.1.100
+proxmox-2     IN          A       192.168.1.101
+proxmox-3     IN          A       192.168.1.102
+
+; DNS for Proxmox VMs
+{% for host in dns_hosts %}
+{{ host.hostname }}    IN      A       {{ host.ip }}
+{% endfor %}

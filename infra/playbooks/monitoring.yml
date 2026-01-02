@@ -1,0 +1,50 @@
+---
+- name: Install and configure Prometheus
+  hosts: monitoring
+  become: true
+  tasks:
+    - name: Install and configure Prometheus
+      tags: prometheus
+      include_role:
+        name: prometheus.prometheus.prometheus
+      vars:
+        prometheus_scrape_configs:
+          - job_name: "node-exporter"
+            file_sd_configs:
+              - files:
+                  - "{{ prometheus_config_dir }}/file_sd/node-exporter*.yml"
+    - name: Install and configure Grafana
+      tags: grafana
+      block:
+        - name: Add Grafana repository
+          deb822_repository:
+            name: grafana
+            types: deb
+            uris: https://apt.grafana.com
+            suites: stable
+            components: main
+            signed_by: https://apt.grafana.com/gpg.key
+            trusted: true
+
+        - name: Install Grafana
+          ansible.builtin.apt:
+            name: grafana
+            update_cache: true
+          notify: Restart Grafana
+
+        - name: Add Prometheus datasources
+          grafana.grafana.datasource:
+            dataSource:
+              name: Prometheus
+              type: prometheus
+              access: proxy
+              url: http://localhost:9090
+            grafana_url: "http://monitoring.infra.bastien-antoine.fr:3000"
+            grafana_api_key: "{{ vault_grafana_api_key }}"
+            state: present
+
+  handlers:
+    - name: Restart Grafana
+      ansible.builtin.service:
+        name: grafana-server
+        state: restarted

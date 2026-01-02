@@ -1,0 +1,78 @@
+---
+- name: Install and setup DNS nodes
+  hosts: dns
+  tasks:
+    - name: Install bind9
+      become: true
+      ansible.builtin.package:
+        name: bind9
+        state: present
+        update_cache: true
+      notify:
+        - Restart bind9
+
+    - name: Configure bind9
+      become: true
+      ansible.builtin.template:
+        src: "dns/{{ item }}.j2"
+        dest: "/etc/bind/{{ item }}"
+        mode: "u=rw,g=r,o=r"
+      vars:
+        is_primary: "{{ 'dns-primary' in group_names }}"
+        primary_ip: "{% for host in groups['dns-primary'] %}{{ hostvars[host]['ansible_default_ipv4']['address'] }}; {% endfor %}"
+        replicas_ips: "{% for host in groups['dns-replicas'] %}{{ hostvars[host]['ansible_default_ipv4']['address'] }}; {% endfor %}"
+      loop:
+        - "named.conf.local"
+        - "named.conf.options"
+      notify:
+        - Restart bind9
+
+    - name: Copy the zone file for lab.bastien-antoine.fr
+      become: true
+      when: "'dns-primary' in group_names"
+      ansible.builtin.copy:
+        src: "files/dns/lab-bastien-antoine-fr.zone"
+        dest: /etc/bind/lab-bastien-antoine-fr.zone
+        mode: "u=rw,g=r,o=r"
+      notify:
+        - Restart bind9
+
+  handlers:
+    - name: Restart bind9
+      become: true
+      ansible.builtin.service:
+        name: bind9
+        state: restarted
+- name: Configure DNS zones
+  hosts: dns-primary
+  become: true
+  tasks:
+    - name: Compute list of hosts
+      ansible.builtin.set_fact:
+        dns_hosts: >-
+          {{
+            dns_hosts | default([]) +
+            [{'hostname': hostvars[item].hostname, 'ip': hostvars[item].ansible_host}]
+          }}
+      loop: "{{ groups['proxmox_all_qemu'] }}"
+
+    - name: Generate zone file for infra.bastien-antoine.fr
+      ansible.builtin.template:
+        src: "templates/dns/infra-bastien-antoine-fr.zone.j2"
+        dest: "/etc/bind/infra-bastien-antoine-fr.zone"
+        mode: "u=rw,g=r,o=r"
+      notify:
+        - Restart bind9
+
+    - name: Show generated DNS hosts
+      vars:
+        msg: "{% for item in dns_hosts %}{{ item.hostname }} -> {{ item.ip }}\n{% endfor %}"
+      ansible.builtin.debug:
+        msg: "{{ msg.split('\n') }}"
+
+  handlers:
+    - name: Restart bind9
+      become: true
+      ansible.builtin.service:
+        name: bind9
+        state: restarted

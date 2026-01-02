@@ -1,0 +1,19 @@
+$TTL 2d
+
+$ORIGIN lab.bastien-antoine.fr.
+
+@                       IN      SOA     ns.lab.bastien-antoine.fr. info.bastien-antoine.fr. (
+                                    2023120300    ; serial
+                                    12h           ; refresh time
+                                    15m           ; retry time
+                                    3w            ; expire time
+                                    2h            ; minimum TTL
+                                )
+
+; Declare which server hosts the DNS records
+                        IN      NS      ns.lab.bastien-antoine.fr.
+ns                      IN      A       192.168.1.201
+
+*.kube                  IN      CNAME   kube-0.infra.bastien-antoine.fr.
+kube                    IN      CNAME   kube-0.infra.bastien-antoine.fr.
+grafana                 IN      CNAME   pi-1.infra.bastien-antoine.fr.

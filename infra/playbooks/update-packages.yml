@@ -1,0 +1,8 @@
+- name: Update and upgrade system packages
+  hosts: all
+  tasks:
+    - name: Update and upgrade system packages
+      become: true
+      ansible.builtin.package:
+        upgrade: true
+        update_cache: true

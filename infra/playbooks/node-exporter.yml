@@ -1,0 +1,38 @@
+---
+- name: Install Node exporter
+  hosts: all
+  become: true
+  ignore_unreachable: true
+  tags: node_exporter_setup
+  tasks:
+    - name: Install and configure Node exporter
+      ansible.builtin.include_role:
+        name: prometheus.prometheus.node_exporter
+
+- name: Configure Prometheus to scrape Node exporter
+  hosts: monitoring
+  become: true
+  tags: node_exporter_register
+  tasks:
+    - name: Locating all files in files dir
+      find:
+        path: "/etc/prometheus/file_sd/"
+        patterns: "node-exporter-*.yml"
+      register: cleanup
+      ignore_errors: true
+
+    - name: Removing all files previously found in files dir
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      with_items: "{{ cleanup.files }}"
+      ignore_errors: true
+
+    - name: Register targets in Prometheus
+      ansible.builtin.template:
+        src: "node-exporter/node-exporter.yml.j2"
+        dest: "/etc/prometheus/file_sd/node-exporter-{{ item }}.yml"
+        mode: "u=rw,g=r,o=r"
+      vars:
+        hostname: "{{ item }}.infra.bastien-antoine.fr"
+      loop: "{{ (groups['proxmox_all_qemu'] + groups['proxmox-nodes']) | map('extract', hostvars, ['hostname']) | list }}"

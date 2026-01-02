@@ -1,0 +1,21 @@
+plugin: community.proxmox.proxmox
+url: https://proxmox-1.infra.bastien-antoine.fr:8006
+user: "ansible-inventory@pve"
+password: !vault |
+  $ANSIBLE_VAULT;1.1;AES256
+  30393966653962643363393130373130316261623735333564316133346234666536663761363832
+  3131313363346363616434323231396565623663333532610a653431633265353732633631613535
+  64366333646634636264333135356464616535333138303764316635623536333138303966346333
+  6631383264666332330a643139653639656335373562343936623361366430393433373537306566
+  6161
+validate_certs: false
+want_facts: true
+want_proxmox_nodes_ansible_host: false
+compose:
+  ansible_host: proxmox_ipconfig0.ip | split('/') | first
+  ansible_user: proxmox_ciuser
+  hostname: proxmox_name
+keyed_groups:
+  - key: proxmox_tags_parsed
+    separator: ""
+    prefix: "proxmox-"

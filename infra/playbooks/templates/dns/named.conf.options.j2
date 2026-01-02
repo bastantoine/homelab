@@ -1,0 +1,26 @@
+acl internal {{'{'}}
+    192.168.1.0/24;
+{{'}'}};
+
+options {{'{'}}
+    directory "/var/cache/bind";
+    forwarders {{'{'}}
+        1.1.1.1;
+        8.8.8.8;
+    {{'}'}};
+    allow-query {{'{'}} internal; {{'}'}};
+
+    // Disable DNSSEC... less secure, but easier this way,
+    // especially in a homelab situation
+	// dnssec-enable no;
+    // dnssec-validation no;
+    // dnssec-lookaside auto;
+
+	listen-on-v6 {{'{'}} any; {{'}'}};
+
+    {% if is_primary %}
+    notify yes;
+    also-notify {{'{'}} {{ replicas_ips }} {{'}'}};
+    allow-transfer {{'{'}} {{ replicas_ips }} {{'}'}};
+    {% endif %}
+{{'}'}};

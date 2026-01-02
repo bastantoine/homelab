@@ -1,0 +1,56 @@
+all:
+  children:
+    # Proxmox and Contabo VMs
+    proxmox-nodes:
+      hosts:
+        proxmox-1:
+          ansible_host: proxmox-1.infra.bastien-antoine.fr
+          hostname: proxmox-1
+        proxmox-2:
+          ansible_host: proxmox-2.infra.bastien-antoine.fr
+          hostname: proxmox-2
+        proxmox-3:
+          ansible_host: proxmox-3.infra.bastien-antoine.fr
+          hostname: proxmox-3
+      vars:
+        ansible_user: root
+    proxmox:
+      children:
+        proxmox_all_running:
+    contabo:
+      hosts:
+        coruscant:
+        naboo:
+      vars:
+        ansible_user: dev
+        ansible_become_password: "{{ vault_contabo_user_password | default('') }}"
+        ansible_become_method: ansible.builtin.sudo
+    # DNS
+    dns:
+      children:
+        proxmox_dns:
+    dns-primary:
+      children:
+        proxmox_dns_primary:
+    dns-replicas:
+      children:
+        proxmox_dns_replicas:
+    # Monitoring
+    monitoring:
+      children:
+        proxmox_monitoring:
+    # Kube
+    k3s_cluster:
+      children:
+        server:
+          children:
+            proxmox_kube_master:
+        agent:
+          children:
+            proxmox_kube_worker:
+      vars:
+        ansible_user: user
+        k3s_version: v1.34.2+k3s1
+        token: "{{ vault_k3s_token }}"
+        api_endpoint: "{{ hostvars[groups['server'][0]]['ansible_host'] | default(groups['server'][0]) }}"
+        # api_endpoint: "192.168.1.209"

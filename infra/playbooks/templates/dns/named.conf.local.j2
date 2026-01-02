@@ -1,0 +1,20 @@
+{% for zone in zones %}
+zone "{{ zone }}" IN {{'{'}}
+    {% if is_primary %}
+
+    type primary;
+    notify yes;
+    also-notify {{'{'}} {{ replicas_ips }} {{'}'}};
+    allow-transfer {{'{'}} {{ replicas_ips }} {{'}'}};
+    file "/etc/bind/{{ zone | replace('.', '-') }}.zone";
+
+    {% else %}
+
+    type secondary;
+    masters {{'{'}} {{ primary_ip }} {{'}'}};
+    check-names fail;
+    allow-query {{'{'}} any; {{'}'}};
+
+    {% endif %}
+{{'}'}};
+{% endfor %}

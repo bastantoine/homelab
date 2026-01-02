@@ -1,0 +1,95 @@
+---
+- name: Initial setup of a new VM
+  hosts: all
+  tasks:
+    - name: Initial setup
+      tags:
+        - init
+      become: true
+      block:
+        - name: Set hostname
+          ansible.builtin.hostname:
+            name: "{{ hostname }}"
+          when: hostname is defined
+
+        - name: Install Qemu guest agent
+          ansible.builtin.package:
+            name: qemu-guest-agent
+            state: present
+          notify:
+            - Reboot
+
+    - name: User environment
+      tags:
+        - user-env
+      block:
+        - name: Install dependencies
+          become: true
+          ansible.builtin.apt:
+            name:
+              - git
+              - fzf
+              - vim
+              - tmux
+              - curl
+              - zsh
+              - net-tools
+              - jq
+            state: present
+
+        - name: Set ZSH as shell of user
+          become: true
+          ansible.builtin.user:
+            user: "{{ ansible_user_id }}"
+            shell: /usr/bin/zsh
+
+        - name: Clone oh-my-zsh repo
+          ansible.builtin.git:
+            repo: https://github.com/ohmyzsh/ohmyzsh.git
+            dest: .oh-my-zsh
+            depth: 1
+            update: false
+
+        - name: Installing oh-my-zsh plugins
+          ansible.builtin.git:
+            repo: "https://github.com/zsh-users/{{ item }}"
+            dest: ".oh-my-zsh/custom/plugins/{{ item }}"
+            update: false
+          loop:
+            - zsh-autosuggestions
+            - zsh-syntax-highlighting
+
+        - name: Installing Powerlevel10k theme
+          ansible.builtin.git:
+            repo: https://github.com/romkatv/powerlevel10k
+            dest: .oh-my-zsh/custom/themes/powerlevel10k
+            update: false
+
+        - name: Getting conf files
+          ansible.builtin.get_url:
+            url: "https://raw.githubusercontent.com/bastantoine/dotenv/master/confs/{{ item.file }}"
+            dest: "/home/{{ ansible_user_id }}/{{ item.target }}"
+            mode: "u=rw,g=r,o=r"
+          loop:
+            - file: "zshrc"
+              target: ".zshrc"
+            - file: "gitconfig"
+              target: ".gitconfig"
+            - file: "p10k.zsh"
+              target: ".p10k.zsh"
+            - file: "tmux.conf"
+              target: ".tmux.conf"
+            - file: "vimrc"
+              target: ".vimrc"
+
+        - name: Enable Powerlevel10k theme
+          ansible.builtin.lineinfile:
+            path: "/home/{{ ansible_user_id }}/.zshrc"
+            regexp: "^ZSH_THEME=.*$"
+            line: 'ZSH_THEME="powerlevel10k/powerlevel10k"'
+            state: present
+
+  handlers:
+    - name: Reboot
+      become: true
+      ansible.builtin.reboot:
