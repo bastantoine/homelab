@@ -21,6 +21,9 @@
         is_primary: "{{ 'dns-primary' in group_names }}"
         primary_ip: "{% for host in groups['dns-primary'] %}{{ hostvars[host]['ansible_default_ipv4']['address'] }}; {% endfor %}"
         replicas_ips: "{% for host in groups['dns-replicas'] %}{{ hostvars[host]['ansible_default_ipv4']['address'] }}; {% endfor %}"
+        zones:
+          - "lab.bastien-antoine.fr"
+          - "infra.bastien-antoine.fr"
       loop:
         - "named.conf.local"
         - "named.conf.options"
