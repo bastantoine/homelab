@@ -4,7 +4,7 @@
 python3 -m venv venv
 source venv/bin/activate
 pip install -U pip ansible
-ansible-galaxy collection install -U -r requirements.yml
+ansible-galaxy install -U -r requirements.yml
 ```
 
 ## DNS management
@@ -69,6 +69,23 @@ They can be used directly:
 ```
 ansible-playbook k3s.orchestration.site
 ```
+
+## Nginx and Docker
+
+Two playbooks to install Nginx and Docker on a given node:
+
+```bash
+ansible-playbook playbooks/ansible.yml
+```
+```bash
+ansible-playbook playbooks/docker.yml
+```
+
+The playbook `playbooks/docker.yml` install Docker, as well as the `docker` Python package to be able to use any Ansible actions that deals with Docker
+
+They rely on 3 roles:
+- Nginx: `geerlingguy.nginx`
+- Docker: `geerlingguy.docker` and `geerlingguy.pip`
 
 ## Note on the inventory management
 

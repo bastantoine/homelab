@@ -6,3 +6,8 @@ collections:
   - name: grafana.grafana
   - name: https://github.com/k3s-io/k3s-ansible.git
     type: git
+
+roles:
+  - name: geerlingguy.docker
+  - name: geerlingguy.pip
+  - name: geerlingguy.nginx
