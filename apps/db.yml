@@ -1,0 +1,18 @@
+---
+- name: Install PG cluster
+  hosts: db
+  roles:
+    - role: docker-app
+      vars:
+        project_src: "/home/user/app/postgres"
+        docker_conf:
+          name: postgres
+          services:
+            postgres:
+              image: postgres
+              restart: unless-stopped
+              ports:
+                - 5432:5432
+              environment:
+                POSTGRES_USER: "{{ vault_db.postgres_user }}"
+                POSTGRES_PASSWORD: "{{ vault_db.postgres_password }}"
