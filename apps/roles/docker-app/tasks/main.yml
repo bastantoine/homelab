@@ -17,8 +17,6 @@
     content: "{{ docker_conf | to_nice_yaml }}"
     dest: "{{ project_src }}/docker-compose.yml"
     mode: "0644"
-  vars:
-    docker_conf: "{{ docker_conf }}"
 
 - name: Create and start services
   community.docker.docker_compose_v2:
