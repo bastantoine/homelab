@@ -1,0 +1,16 @@
+all:
+  hosts:
+    db:
+      ansible_host: db.infra.bastien-antoine.fr
+      apps:
+        - name: postgres
+          project_src: /home/user/app/postgres
+          docker_conf:
+            name: postgres
+            services:
+              postgres:
+                image: postgres
+                restart: unless-stopped
+                environment:
+                  POSTGRES_USER: "{{ vault_db.postgres_user }}"
+                  POSTGRES_PASSWORD: "{{ vault_db.postgres_password }}"

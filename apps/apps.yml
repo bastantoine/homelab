@@ -1,0 +1,17 @@
+---
+- name: Install application
+  hosts: all
+  tasks:
+    - name: Install applications
+      ansible.builtin.include_role:
+        name: docker-app
+      vars:
+        project_src: "{{ app.project_src }}"
+        required_dirs: "{{ app.required_dirs }}"
+        required_files: "{{ app.required_files }}"
+        docker_conf: "{{ app.docker_conf }}"
+        nginx_conf: "{{ app.nginx_conf }}"
+      loop: "{{ apps }}"
+      loop_control:
+        label: "{{ app.name }}"
+        loop_var: app
