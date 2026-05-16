@@ -12,6 +12,13 @@
             name: "{{ hostname }}"
           when: hostname is defined
 
+        - name: Copy public SSH key
+          ansible.posix.authorized_key:
+            user: "{{ ansible_user_id }}"
+            state: present
+            key: "{{ lookup('file', '{{ semaphore_public_key_path }}') }}"
+          when: semaphore_public_key_path is defined
+
         - name: Install Qemu guest agent
           ansible.builtin.package:
             name: qemu-guest-agent
