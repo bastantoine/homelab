@@ -1,0 +1,6 @@
+---
+- name: Install Node exporter
+  hosts: all
+  tasks:
+    - name: Ping node
+      ansible.builtin.ping:
