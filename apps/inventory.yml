@@ -2,3 +2,7 @@ all:
   hosts:
     db:
       ansible_host: db.infra.bastien-antoine.fr
+    ansible:
+      ansible_host: ansible.infra.bastien-antoine.fr
+    tests:
+      ansible_host: tests.infra.bastien-antoine.fr
