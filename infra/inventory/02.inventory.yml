@@ -52,4 +52,5 @@ all:
         k3s_version: v1.34.2+k3s1
         token: "{{ vault_k3s_token }}"
         api_endpoint: "{{ hostvars[groups['server'][0]]['ansible_host'] | default(groups['server'][0]) }}"
-        # api_endpoint: "192.168.1.209"
+  vars:
+    semaphore_public_key_path: "/Users/bastienantoine/.ssh/id_rsa_ansible_semaphore.pub"
