@@ -1,0 +1,24 @@
+- name: Install prerequisites
+  become: true
+  block:
+    - ansible.builtin.include_role:
+        name: geerlingguy.pip
+      vars:
+        pip_install_packages:
+          - psycopg2-binary
+
+- name: Create PG user
+  community.postgresql.postgresql_user:
+    login_host: "{{ cluster_host }}"
+    login_user: "{{ cluster_admin_user }}"
+    login_password: "{{ cluster_admin_password }}"
+    name: "{{ app_db_user }}"
+    password: "{{ app_db_password }}"
+
+- name: Create PG database
+  community.postgresql.postgresql_db:
+    login_host: "{{ cluster_host }}"
+    login_user: "{{ cluster_admin_user }}"
+    login_password: "{{ cluster_admin_password }}"
+    name: "{{ app_db_name }}"
+    owner: "{{ app_db_user }}"
