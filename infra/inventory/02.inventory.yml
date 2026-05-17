@@ -20,7 +20,6 @@ all:
     contabo:
       hosts:
         coruscant:
-        naboo:
       vars:
         ansible_user: dev
         ansible_become_password: "{{ vault_contabo_user_password | default('') }}"
