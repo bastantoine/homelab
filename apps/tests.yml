@@ -1,0 +1,30 @@
+---
+- name: Tests
+  hosts: tests
+  roles:
+    - name: Create PG user and database
+      ansible.builtin.include_role:
+        name: pg-database
+      vars:
+        cluster_host: db.infra.bastien-antoine.fr
+        cluster_admin_user: "{{ vault_db.postgres_user }}"
+        cluster_admin_password: "{{ vault_db.postgres_password }}"
+        app_db_user: tests
+        app_db_password: tests
+        app_db_name: tests
+
+    - role: docker-app
+      vars:
+        project_src: /home/user/app/demo-http
+        docker_conf:
+          name: demo-http
+          services:
+            demo-http:
+              image: traefik/whoami
+              ports:
+                - 8080:80
+        nginx_conf:
+          server_name: "demo-http.lab.bastien-antoine.fr"
+          listen: "80"
+          app_port: 8080
+          redirect_to_https: true
