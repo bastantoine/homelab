@@ -1,7 +1,0 @@
----
-collections:
-  - name: community.docker
-  - name: community.postgresql
-roles:
-  - name: geerlingguy.nginx
-  - name: geerlingguy.pip
