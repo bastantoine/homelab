@@ -13,3 +13,7 @@ roles:
   - name: geerlingguy.docker
   - name: geerlingguy.pip
   - name: geerlingguy.nginx
+  - name: docker-app
+    src: https://github.com/bastantoine/ansible-role-docker-app
+  - name: pg-database
+    src: https://github.com/bastantoine/ansible-role-pg-database
