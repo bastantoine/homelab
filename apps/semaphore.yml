@@ -1,0 +1,44 @@
+---
+- name: Install PG cluster
+  hosts: ansible
+  tasks:
+    - name: Create PG user and database
+      become: true
+      block:
+        - name: Create PG user and database
+          ansible.builtin.include_role:
+            name: pg-database
+          vars:
+            cluster_host: db.infra.bastien-antoine.fr
+            cluster_admin_user: "{{ vault_db.postgres_user }}"
+            cluster_admin_password: "{{ vault_db.postgres_password }}"
+            app_db_user: "{{ vault_semaphore.postgres_user }}"
+            app_db_password: "{{ vault_semaphore.postgres_password }}"
+            app_db_name: "{{ vault_semaphore.postgres_db }}"
+
+    - name: Install application
+      ansible.builtin.include_role:
+        name: docker-app
+      vars:
+        project_src: /home/user/app/semaphore
+        docker_conf:
+          services:
+            semaphore:
+              restart: unless-stopped
+              ports:
+                - 3000:3000
+              image: semaphoreui/semaphore:latest
+              environment:
+                SEMAPHORE_DB_USER: "{{ vault_semaphore.postgres_user }}"
+                SEMAPHORE_DB_PASS: "{{ vault_semaphore.postgres_password }}"
+                SEMAPHORE_DB_HOST: db.infra.bastien-antoine.fr
+                SEMAPHORE_DB_PORT: 5432
+                SEMAPHORE_DB_DIALECT: postgres
+                SEMAPHORE_DB: "{{ vault_semaphore.postgres_db }}"
+                SEMAPHORE_PLAYBOOK_PATH: /tmp/semaphore/
+                SEMAPHORE_ADMIN_PASSWORD: "{{ vault_semaphore.admin_password }}"
+                SEMAPHORE_ADMIN_NAME: admin
+                SEMAPHORE_ADMIN_EMAIL: admin@localhost
+                SEMAPHORE_ADMIN: admin
+                SEMAPHORE_ACCESS_KEY_ENCRYPTION: "{{ vault_semaphore.access_key_encryption }}"
+                TZ: UTC
