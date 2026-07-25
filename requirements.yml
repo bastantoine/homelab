@@ -8,6 +8,7 @@ collections:
     type: git
   - name: community.docker
   - name: community.postgresql
+  - name: artis3n.tailscale
 
 roles:
   - name: geerlingguy.docker

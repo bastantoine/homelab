@@ -1,0 +1,6 @@
+- name: Servers
+  hosts: all
+  roles:
+    - role: artis3n.tailscale.machine
+      vars:
+        tailscale_authkey: "{{ vault_tailscale_authkey }}"
