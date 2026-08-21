@@ -1,0 +1,29 @@
+namespace: monitoring
+ingress:
+  enabled: true
+  hosts:
+    - host: logs.kube.lab.bastien-antoine.fr
+      paths:
+        - path: /
+          pathType: Prefix
+dozzle:
+  authProvider: simple
+  usersConfigMapName: dozzle-users
+  enableShell: true
+  basePath: /
+  analytics: false
+  hostname: logs.kube.lab.bastien-antoine.fr
+extraObjects:
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: dozzle-users
+      namespace: monitoring
+    data:
+      users.yml: |
+        users:
+          bastantoine:
+            email: me@email.net
+            password: $2a$11$f7i6edq4.vUgjSKmbuyfCevC5EcGP0zyqv1DHx5ztermUyzbuGvP2
+            filter:
+            roles: all
